@@ -4,6 +4,9 @@
 package org.example;
 
 import org.junit.Test;
+
+import hyperloglog.App;
+
 import static org.junit.Assert.*;
 
 public class AppTest {
