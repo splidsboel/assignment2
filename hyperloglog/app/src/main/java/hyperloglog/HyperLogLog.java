@@ -43,4 +43,14 @@ public class HyperLogLog {
         }
         return hash;
     }
+    /**
+     * Since ρ(x) is the position of the first 1 in the binary representation of 
+     * the binary string x, we can user numberOfLeadingZeros on the input to see where the first 1 is in the bitstring
+     * @param x
+     * @return
+     */
+    public static int rho(int x) {
+        if (x == 0) throw new IllegalArgumentException("rho(0) is undefined");
+        return Integer.numberOfLeadingZeros(x) + 1;
+    }
 }
