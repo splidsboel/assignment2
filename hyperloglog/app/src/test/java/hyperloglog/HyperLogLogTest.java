@@ -33,12 +33,37 @@ public class HyperLogLogTest {
         return hash;
     }
 
+    private int slowRho(int x) {
+        if (x == 0) {
+            throw new IllegalArgumentException("rho(0) is undefined");
+        }
+        for (int bit = 31; bit >= 0; bit--) {
+            if (((x >>> bit) & 1) == 1) {
+                return 32 - bit;
+            }
+        }
+        throw new AssertionError("Input should have at least one bit set");
+    }
+
     @Test
     public void hMatchesSlowHashForRepresentativeInputs() {
         HyperLogLog hll = new HyperLogLog();
         int[] samples = {0, 1, 42, 5000, 123456789, -1, 0x80000000};
         for (int sample : samples) {
             assertEquals(slowHash(sample), hll.h(sample));
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void rhoThrowsOnZero() {
+        HyperLogLog.rho(0);
+    }
+
+    @Test
+    public void rhoMatchesSlowRhoForRepresentativeInputs() {
+        int[] samples = {1, 2, 3, 0x00008000, 0x7fffffff, 0x80000000, -1, -2, 123456789};
+        for (int sample : samples) {
+            assertEquals(slowRho(sample), HyperLogLog.rho(sample));
         }
     }
 }
