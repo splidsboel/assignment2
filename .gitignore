@@ -1,0 +1,29 @@
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# IDE and workspace settings
+.idea/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+.vscode/
+
+# Build and dependency outputs
+.gradle/
+**/build/
+**/out/
+**/bin/
+
+# Compiled artifacts and logs
+*.class
+*.log
+*.tmp
+*.swp
+
+# Local environment files
+.env
+.env.*
