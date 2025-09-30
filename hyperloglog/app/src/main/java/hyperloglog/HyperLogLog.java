@@ -82,7 +82,7 @@ public class HyperLogLog {
      */
     public double hll(int[] Y, int m){
         double alphaM = 0.7213/(1+(1.079/m));
-        int[] M = new int[1024];
+        int[] M = new int[m];
 
         //line 4-6
         for (int i = 0; i < m; i++) {
