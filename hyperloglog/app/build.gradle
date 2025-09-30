@@ -32,5 +32,11 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = 'hyperloglog.App'
+    mainClass = 'hyperloglog.HyperLogLog'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'hyperloglog.HyperLogLog'
+    }
 }
