@@ -98,7 +98,7 @@ public class HyperLogLog {
 
         //line 12
         double sum = 0;
-        for (int i = 1; i < m; i++) {
+        for (int i = 0; i < m; i++) {
             sum+=Math.pow(2, -M[i]);
         }
         double estimate = (alphaM * (m*m)) * Math.pow(sum, -1);
