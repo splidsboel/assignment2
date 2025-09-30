@@ -112,7 +112,7 @@ public class HyperLogLog {
         }
 
         //line 14-16
-        if ((estimate<=((5.0/2)*m))& V>0) {
+        if ((estimate<=((5.0/2)*m))&& V>0) {
             return m * Math.log((double) m / V); 
         }
 
