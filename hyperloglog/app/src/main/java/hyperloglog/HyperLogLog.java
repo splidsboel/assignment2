@@ -77,19 +77,64 @@ public class HyperLogLog {
     }
 
     public static void main(String[] args) {
-        int[] x = readData();
-        int[] y = null;
-
-        if ("hash".equals(args[0])) {
-            y = hArray(x);
-        }
-
-        if (y == null) {
+        if (args.length == 0) {
+            System.err.println("Expected a mode argument (e.g., hash, rho-dist).");
             System.out.println("null");
+            return;
         }
-        else {
-            System.out.println(String.format("%d %d %d",
-                y[0], y[1], y[2]));
+
+        int[] x = readData();
+
+        switch (args[0]) {
+            case "hash": {
+                int[] hashed = hArray(x);
+                if (hashed.length == 0) {
+                    System.out.println("null");
+                } else if (hashed.length < 3) {
+                    StringBuilder builder = new StringBuilder();
+                    for (int i = 0; i < hashed.length; i++) {
+                        if (i > 0) {
+                            builder.append(' ');
+                        }
+                        builder.append(hashed[i]);
+                    }
+                    System.out.println(builder.toString());
+                } else {
+                    System.out.println(String.format("%d %d %d",
+                        hashed[0], hashed[1], hashed[2]));
+                }
+                break;
+            }
+            case "rho-dist": {
+                int[] hashed = hArray(x);
+                int[] counts = new int[33]; // Index 1..32 store rho counts
+                int undefined = 0;
+
+                for (int value : hashed) {
+                    if (value == 0) {
+                        undefined++;
+                        continue;
+                    }
+
+                    int rhoValue = rho(value);
+                    if (rhoValue >= counts.length) {
+                        counts = Arrays.copyOf(counts, rhoValue + 1);
+                    }
+                    counts[rhoValue]++;
+                }
+
+                System.out.println("rho,count");
+                for (int rhoValue = 1; rhoValue < counts.length; rhoValue++) {
+                    System.out.printf("%d,%d%n", rhoValue, counts[rhoValue]);
+                }
+                System.out.printf("undefined,%d%n", undefined);
+                break;
+            }
+            default: {
+                System.err.println("Unknown mode: " + args[0]);
+                System.out.println("null");
+                break;
+            }
         }
     }
 }
