@@ -41,13 +41,19 @@ public class HyperLogLog {
             hash |= parity << i;
         }
         return hash;
-    }
+    }    
 
     public static int[] hArray(int[] x){
         return Arrays.stream(x)
             .map(HyperLogLog::h)
             .toArray();
     }
+
+
+    public static int f(int x){
+        return ((x*0xbc164501) & 0x7fffffff) >> 21;
+    }
+
     /**
      * Since ρ(x) is the position of the first 1 in the binary representation of 
      * the binary string x, we can user numberOfLeadingZeros on the input to see where the first 1 is in the bitstring
