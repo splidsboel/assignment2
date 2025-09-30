@@ -3,31 +3,30 @@
  */
 package hyperloglog;
 
+import java.util.Arrays;
+import java.util.Scanner;
+
 public class HyperLogLog {
-    private int[] hashIntegers;
+    private static final int[] hashIntegers = {
+        0x21ae4036, 0x32435171, 0xac3338cf,
+        0xea97b40c, 0x0e504b22, 0x9ff9a4ef,
+        0x111d014d, 0x934f3787, 0x6cd079bf,
+        0x69db5c31, 0xdf3c28ed, 0x40daf2ad,
+        0x82a5891c, 0x4659c7b0, 0x73dc0ca8,
+        0xdad3aca2, 0x00c74c7e, 0x9a2521e2,
+        0xf38eb6aa, 0x64711ab6, 0x5823150a,
+        0xd13a3a9a, 0x30a5aa04, 0x0fb9a1da,
+        0xef785119, 0xc9f0b067, 0x1e7dde42,
+        0xdda4a7b2, 0x1a1c2640, 0x297c0633,
+        0x744edb48, 0x19adce93
+    };
 
     public HyperLogLog() {
-        hashIntegers = new int[] {
-            0x21ae4036, 0x32435171, 0xac3338cf,
-            0xea97b40c, 0x0e504b22, 0x9ff9a4ef,
-            0x111d014d, 0x934f3787, 0x6cd079bf,
-            0x69db5c31, 0xdf3c28ed, 0x40daf2ad,
-            0x82a5891c, 0x4659c7b0, 0x73dc0ca8,
-            0xdad3aca2, 0x00c74c7e, 0x9a2521e2,
-            0xf38eb6aa, 0x64711ab6, 0x5823150a,
-            0xd13a3a9a, 0x30a5aa04, 0x0fb9a1da,
-            0xef785119, 0xc9f0b067, 0x1e7dde42,
-            0xdda4a7b2, 0x1a1c2640, 0x297c0633,
-            0x744edb48, 0x19adce93
-        };
+        
     }
 
 
-    public static void main(String[] args) {
-        HyperLogLog app = new HyperLogLog();
-        System.out.println(app.h(5000));
-    }
-
+    
     /**
      * For each integer in A (hashIntegers array) we take the bitwise AND with x,
      * count the number of set bits in the result, extract the parity (whether it's even or odd), 
@@ -35,13 +34,19 @@ public class HyperLogLog {
      * @param x
      * @return deterministic hash of x
      */
-    public int h(int x) {
+    public static int h(int x) {
         int hash = 0;
         for (int i = 0; i < hashIntegers.length; i++) {
             int parity = Integer.bitCount(hashIntegers[i] & x) & 1;
             hash |= parity << i;
         }
         return hash;
+    }
+
+    public static int[] hArray(int[] x){
+        return Arrays.stream(x)
+            .map(HyperLogLog::h)
+            .toArray();
     }
     /**
      * Since ρ(x) is the position of the first 1 in the binary representation of 
@@ -52,5 +57,39 @@ public class HyperLogLog {
     public static int rho(int x) {
         if (x == 0) throw new IllegalArgumentException("rho(0) is undefined");
         return Integer.numberOfLeadingZeros(x) + 1;
+    }
+    
+
+    public static int[] readData() {
+        Scanner s = new Scanner(System.in);
+        int[] x = null;
+        try {
+            int n = s.nextInt();
+            x = new int[n];
+            for (int i = 0; i < n; ++i) {
+                x[i] = s.nextInt();
+            }
+        }
+        finally {
+            s.close();
+        }
+        return x;
+    }
+
+    public static void main(String[] args) {
+        int[] x = readData();
+        int[] y = null;
+
+        if ("hash".equals(args[0])) {
+            y = hArray(x);
+        }
+
+        if (y == null) {
+            System.out.println("null");
+        }
+        else {
+            System.out.println(String.format("%d %d %d",
+                y[0], y[1], y[2]));
+        }
     }
 }
