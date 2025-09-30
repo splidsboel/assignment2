@@ -117,7 +117,7 @@ public class HyperLogLog {
         }
 
         //line 17-19
-        if (estimate>((1/30)*Math.pow(2, 32))) {
+        if (estimate>((1.0/30)*Math.pow(2, 32))) {
             estimate = (-Math.pow(2, 32))*Math.log(1-(estimate/(Math.pow(2, 32))));
         }
         return estimate;
