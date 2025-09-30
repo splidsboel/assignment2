@@ -77,16 +77,10 @@ public class HyperLogLog {
     }
 
     public static void main(String[] args) {
-        if (args.length == 0) {
-            System.err.println("Expected a mode argument (e.g., hash, rho-dist).");
-            System.out.println("null");
-            return;
-        }
-
         int[] x = readData();
 
         switch (args[0]) {
-            case "hash": {
+            case "hash": { //if the input begins with hash
                 int[] hashed = hArray(x);
                 if (hashed.length == 0) {
                     System.out.println("null");
@@ -105,16 +99,12 @@ public class HyperLogLog {
                 }
                 break;
             }
-            case "rho-dist": {
+            case "rho-dist": { //if the input starts with rho-dist
                 int[] hashed = hArray(x);
-                int[] counts = new int[33]; // Index 1..32 store rho counts
-                int undefined = 0;
+                int[] counts = new int[33]; //indexes from 1-32 to store the rho counts
 
                 for (int value : hashed) {
-                    if (value == 0) {
-                        undefined++;
-                        continue;
-                    }
+                   
 
                     int rhoValue = rho(value);
                     if (rhoValue >= counts.length) {
@@ -127,7 +117,6 @@ public class HyperLogLog {
                 for (int rhoValue = 1; rhoValue < counts.length; rhoValue++) {
                     System.out.printf("%d,%d%n", rhoValue, counts[rhoValue]);
                 }
-                System.out.printf("undefined,%d%n", undefined);
                 break;
             }
             default: {
