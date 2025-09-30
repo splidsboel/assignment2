@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 public class HyperLogLog {
+
+    // storing pre-specified hash seeds from assignment description
     private static final int[] hashIntegers = {
         0x21ae4036, 0x32435171, 0xac3338cf,
         0xea97b40c, 0x0e504b22, 0x9ff9a4ef,
