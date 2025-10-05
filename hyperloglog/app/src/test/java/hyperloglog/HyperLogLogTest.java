@@ -1,6 +1,7 @@
 package hyperloglog;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -65,5 +66,23 @@ public class HyperLogLogTest {
         for (int sample : samples) {
             assertEquals(slowRho(sample), HyperLogLog.rho(sample));
         }
+    }
+
+    @Test
+    public void hllEstimatesMillionDistinctWithinExpectedError() {
+        HyperLogLog hll = new HyperLogLog();
+        final int start = 1_000_000;
+        final int count = 1_000_000;
+        int[] data = new int[count];
+        for (int i = 0; i < count; i++) {
+            data[i] = start + i;
+        }
+
+        double estimate = hll.hll(data);
+        double relativeError = Math.abs(estimate - count) / count;
+        double maxRelativeError = 0.05; // Allow some slack beyond the ~3.3% expected error.
+
+        assertTrue(String.format("Estimate %.2f deviates %.2f%% from %d", estimate,
+                relativeError * 100.0, count), relativeError <= maxRelativeError);
     }
 }

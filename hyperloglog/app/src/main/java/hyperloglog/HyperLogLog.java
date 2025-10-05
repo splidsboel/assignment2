@@ -82,7 +82,7 @@ public class HyperLogLog {
      */
     public double hll(int[] Y, int m){
         double alphaM = 0.7213/(1+(1.079/m));
-        int[] M = new int[1024];
+        int[] M = new int[m];
 
         //line 4-6
         for (int i = 0; i < m; i++) {
@@ -98,13 +98,13 @@ public class HyperLogLog {
 
         //line 12
         double sum = 0;
-        for (int i = 1; i < m; i++) {
-            sum+=Math.pow(2, -M[i]);
+        for (int i = 0; i < m; i++) {
+            sum += Math.pow(2.0, -M[i]);
         }
-        double estimate = (alphaM * (m*m)) * Math.pow(sum, -1);
+        double estimate = (alphaM * m * m) / sum;
 
         //line 13
-        int V = 0;
+        int V = 0; //number of empty registers
         for (int i : M) {
             if (i==0){
                 V++;
@@ -112,13 +112,14 @@ public class HyperLogLog {
         }
 
         //line 14-16
-        if ((estimate<=((5/2)*m))& V>0) {
+        if ((estimate <= (2.5 * m)) && V > 0) {
             return m * Math.log((double) m / V); 
         }
 
         //line 17-19
-        if (estimate>((1/30)*Math.pow(2, 32))) {
-            estimate = (Math.pow(-2, 32))*Math.log(1-(estimate/(Math.pow(2, 32))));
+        double twoTo32 = Math.pow(2.0, 32);
+        if (estimate > ((1.0/30.0) * twoTo32)) {
+            estimate = -twoTo32 * Math.log(1.0 - (estimate / twoTo32));
         }
         return estimate;
     }
