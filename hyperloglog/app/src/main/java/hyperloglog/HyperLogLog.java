@@ -64,6 +64,65 @@ public class HyperLogLog {
         if (x == 0) throw new IllegalArgumentException("rho(0) is undefined");
         return Integer.numberOfLeadingZeros(x) + 1;
     }
+
+    /**
+     * overloaded hll with default m argument
+     * @param Y
+     * @return
+     */
+    public double hll(int[] Y){
+        return hll(Y, 1024);
+    }
+    /**
+     * implements hyperloglog.
+     * Comments are references to line #'s in the pseudocode (Algorithm 1)
+     * @param Y
+     * @param m
+     * @return
+     */
+    public double hll(int[] Y, int m){
+        double alphaM = 0.7213/(1+(1.079/m));
+        int[] M = new int[m];
+
+        //line 4-6
+        for (int i = 0; i < m; i++) {
+            M[i] = 0;
+        }
+
+        //line 7-11
+        for (int y : Y) {
+            int j = f(y);
+            int x = h(y);
+            M[j] = Math.max(M[j], rho(x));
+        }
+
+        //line 12
+        double sum = 0;
+        for (int i = 0; i < m; i++) {
+            sum += Math.pow(2.0, -M[i]);
+        }
+        double estimate = (alphaM * m * m) / sum;
+
+        //line 13
+        int V = 0; //number of empty registers
+        for (int i : M) {
+            if (i==0){
+                V++;
+            }
+        }
+
+        //line 14-16
+        if ((estimate <= (2.5 * m)) && V > 0) {
+            return m * Math.log((double) m / V); 
+        }
+
+        //line 17-19
+        double twoTo32 = Math.pow(2.0, 32);
+        if (estimate > ((1.0/30.0) * twoTo32)) {
+            estimate = -twoTo32 * Math.log(1.0 - (estimate / twoTo32));
+        }
+        return estimate;
+    }
     
 
     public static int[] readData() {
