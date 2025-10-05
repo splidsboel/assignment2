@@ -82,6 +82,8 @@ public class HyperLogLogTest {
         double relativeError = Math.abs(estimate - count) / count;
         double maxRelativeError = 0.05; // Allow some slack beyond the ~3.3% expected error.
 
+        System.out.println("HLL estimate for 1 mil distinct items: " + estimate);
+
         assertTrue(String.format("Estimate %.2f deviates %.2f%% from %d", estimate,
                 relativeError * 100.0, count), relativeError <= maxRelativeError);
     }
