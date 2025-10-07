@@ -51,7 +51,7 @@ public class HyperLogLog {
             .toArray();
     }
 
-
+    //seting the registers to max of 1024
     public static int f(int x){
         return ((x*0xbc164501) & 0x7fffffff) >> 21;
     }
@@ -91,7 +91,7 @@ public class HyperLogLog {
             M[i] = 0;
         }
 
-        //line 7-11
+        //line 7-11 //altered to reduce index for smaller m
         for (int y : Y) {
             int j = f(y) % m;
             int x = h(y);

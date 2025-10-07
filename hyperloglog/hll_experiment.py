@@ -157,8 +157,8 @@ def main() -> None:
     parser.add_argument(
         "--trials",
         type=int,
-        default=1,
-        help="Number of independent trials to run with different seeds (default: 1).",
+        default=8, 
+        help="Number of independent trials to run with different seeds (default: 8).",
     )
     args = parser.parse_args()
 
