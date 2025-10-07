@@ -9,6 +9,15 @@ python experiments.py
 # generate plot
 python postprocess.py
 ```
+The plot is called rho_distribution.png and can be found in $/ASSIGNMENT2/hyperloglog
+
+### HyperLogLog error estimation
+```zsh
+# run experiments and generate histogram
+# --trials adjusts the amount of trials run during the experiment - default is 8 (for faster execution), table in report uses trias = 100.
+python3 hll_experiment.py -n 100000 --seed 1 --trials 100
+```
+The histogram is called hll_error_histogram.png and can be found in $/ASSIGNMENT2/hyperloglog
 
 ## Running tests
 
