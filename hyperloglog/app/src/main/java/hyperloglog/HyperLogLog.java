@@ -27,6 +27,7 @@ public class HyperLogLog {
     };
 
     private static final int DEFAULT_REGISTER_COUNT = 1024;
+    private static final int DEFAULT_BUCKET_BITS = Integer.numberOfTrailingZeros(DEFAULT_REGISTER_COUNT);
 
     public HyperLogLog() {
         
@@ -73,7 +74,25 @@ public class HyperLogLog {
     }
 
     private static void updateRegister(int[] registers, int value) {
+        int registerCount = registers.length;
+        if (registerCount <= 0) {
+            throw new IllegalArgumentException("register count must be positive");
+        }
+
+        int registerBits = Integer.numberOfTrailingZeros(registerCount);
+        if ((1 << registerBits) != registerCount) {
+            throw new IllegalArgumentException("register count must be a power of two");
+        }
+        if (registerBits > DEFAULT_BUCKET_BITS) {
+            throw new IllegalArgumentException("register count cannot exceed " + DEFAULT_REGISTER_COUNT);
+        }
+
         int bucket = f(value);
+        int shift = DEFAULT_BUCKET_BITS - registerBits;
+        if (shift > 0) {
+            bucket >>>= shift;
+        }
+
         int hashed = h(value);
         registers[bucket] = Math.max(registers[bucket], rho(hashed));
     }
@@ -118,6 +137,12 @@ public class HyperLogLog {
      * @return
      */
     public double hll(int[] Y, int m){
+        if (m <= 0 || (m & (m - 1)) != 0) {
+            throw new IllegalArgumentException("m must be a positive power of two");
+        }
+        if (m > DEFAULT_REGISTER_COUNT) {
+            throw new IllegalArgumentException("m must not exceed " + DEFAULT_REGISTER_COUNT);
+        }
         int[] registers = new int[m];
         for (int value : Y) {
             updateRegister(registers, value);
@@ -323,6 +348,39 @@ public class HyperLogLog {
                     }
                 } finally {
                     scanner.close();
+                }
+                break;
+            }
+            case "estimate": {
+                if (args.length < 2) {
+                    System.err.println("Missing register count for estimate mode.");
+                    System.out.println("null");
+                    break;
+                }
+
+                int m;
+                try {
+                    m = Integer.parseInt(args[1]);
+                } catch (NumberFormatException ex) {
+                    System.err.println("Invalid register count: " + args[1]);
+                    System.out.println("null");
+                    break;
+                }
+
+                if (m <= 0 || (m & (m - 1)) != 0 || m > DEFAULT_REGISTER_COUNT) {
+                    System.err.println("Register count must be a power of two between 1 and " + DEFAULT_REGISTER_COUNT + ".");
+                    System.out.println("null");
+                    break;
+                }
+
+                int[] x = readData();
+                HyperLogLog hll = new HyperLogLog();
+                try {
+                    double estimate = hll.hll(x, m);
+                    System.out.println(estimate);
+                } catch (IllegalArgumentException ex) {
+                    System.err.println(ex.getMessage());
+                    System.out.println("null");
                 }
                 break;
             }
