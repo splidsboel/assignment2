@@ -3,6 +3,9 @@
  */
 package hyperloglog;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -185,6 +188,114 @@ public class HyperLogLog {
                 System.out.println("rho,count");
                 for (int rhoValue = 1; rhoValue < counts.length; rhoValue++) {
                     System.out.printf("%d,%d%n", rhoValue, counts[rhoValue]);
+                }
+                break;
+            }
+            case "hash-sample": {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+                StringBuilder builder = new StringBuilder();
+                boolean first = true;
+                try {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        line = line.trim();
+                        if (line.isEmpty()) {
+                            continue;
+                        }
+                        int value;
+                        try {
+                            value = (int) Long.parseUnsignedLong(line, 16);
+                        } catch (NumberFormatException ex) {
+                            System.err.println("Invalid hex input: " + line);
+                            System.out.println("null");
+                            return;
+                        }
+                        int hashed = h(value);
+                        if (!first) {
+                            builder.append('\n');
+                        } else {
+                            first = false;
+                        }
+                        builder.append(String.format("%08x", hashed));
+                    }
+                    System.out.print(builder.toString());
+                } catch (IOException e) {
+                    System.err.println("Failed to read input: " + e.getMessage());
+                    System.out.println("null");
+                }
+                break;
+            }
+            case "rho-sample": {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+                StringBuilder builder = new StringBuilder();
+                boolean first = true;
+                try {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        line = line.trim();
+                        if (line.isEmpty()) {
+                            continue;
+                        }
+                        int value;
+                        try {
+                            value = (int) Long.parseUnsignedLong(line, 16);
+                        } catch (NumberFormatException ex) {
+                            System.err.println("Invalid hex input: " + line);
+                            System.out.println("null");
+                            return;
+                        }
+                        if (value == 0) {
+                            System.err.println("rho(0) is undefined for input: " + line);
+                            System.out.println("null");
+                            return;
+                        }
+                        int rhoValue = rho(value);
+                        if (!first) {
+                            builder.append('\n');
+                        } else {
+                            first = false;
+                        }
+                        builder.append(rhoValue);
+                    }
+                    System.out.print(builder.toString());
+                } catch (IOException e) {
+                    System.err.println("Failed to read input: " + e.getMessage());
+                    System.out.println("null");
+                }
+                break;
+            }
+            case "registers-sample": {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+                int[] registers = new int[DEFAULT_REGISTER_COUNT];
+                try {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        line = line.trim();
+                        if (line.isEmpty()) {
+                            continue;
+                        }
+                        int value;
+                        try {
+                            value = (int) Long.parseUnsignedLong(line, 16);
+                        } catch (NumberFormatException ex) {
+                            System.err.println("Invalid hex input: " + line);
+                            System.out.println("null");
+                            return;
+                        }
+                        updateRegister(registers, value);
+                    }
+
+                    StringBuilder builder = new StringBuilder();
+                    for (int i = 0; i < registers.length; i++) {
+                        if (i > 0) {
+                            builder.append('\n');
+                        }
+                        builder.append(registers[i]);
+                    }
+                    System.out.print(builder.toString());
+                } catch (IOException e) {
+                    System.err.println("Failed to read input: " + e.getMessage());
+                    System.out.println("null");
                 }
                 break;
             }
