@@ -2,6 +2,14 @@
 
 ## Generating visualizations
 
+### rho-function
+```zsh
+# generate data
+python experiments.py
+# generate plot
+python postprocess.py
+```
+
 ## Running tests
 
 ### Unit tests
