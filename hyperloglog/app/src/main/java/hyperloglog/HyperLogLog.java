@@ -27,6 +27,7 @@ public class HyperLogLog {
     };
 
     private static final int DEFAULT_REGISTER_COUNT = 1024;
+    private static final int DEFAULT_BUCKET_BITS = Integer.numberOfTrailingZeros(DEFAULT_REGISTER_COUNT);
 
     public HyperLogLog() {
         
@@ -75,7 +76,25 @@ public class HyperLogLog {
     }
 
     private static void updateRegister(int[] registers, int value) {
+        int registerCount = registers.length;
+        if (registerCount <= 0) {
+            throw new IllegalArgumentException("register count must be positive");
+        }
+
+        int registerBits = Integer.numberOfTrailingZeros(registerCount);
+        if ((1 << registerBits) != registerCount) {
+            throw new IllegalArgumentException("register count must be a power of two");
+        }
+        if (registerBits > DEFAULT_BUCKET_BITS) {
+            throw new IllegalArgumentException("register count cannot exceed " + DEFAULT_REGISTER_COUNT);
+        }
+
         int bucket = f(value);
+        int shift = DEFAULT_BUCKET_BITS - registerBits;
+        if (shift > 0) {
+            bucket >>>= shift;
+        }
+
         int hashed = h(value);
         registers[bucket] = Math.max(registers[bucket], rho(hashed));
     }
@@ -120,34 +139,15 @@ public class HyperLogLog {
      * @return
      */
     public double hll(int[] Y, int m){
-        double alphaM = 0.7213/(1+(1.079/m));
-        int[] M = new int[m];
-
-        //line 4-6
-        for (int i = 0; i < m; i++) {
-            M[i] = 0;
+        if (m <= 0 || (m & (m - 1)) != 0) {
+            throw new IllegalArgumentException("m must be a positive power of two");
         }
-
-        //line 7-11 //altered to reduce index for other m
-        for (int y : Y) {
-            int j = f(y) % m;
-            int x = h(y);
-            M[j] = Math.max(M[j], rho(x));
+        if (m > DEFAULT_REGISTER_COUNT) {
+            throw new IllegalArgumentException("m must not exceed " + DEFAULT_REGISTER_COUNT);
         }
-
-        //line 12
-        double sum = 0;
-        for (int i = 0; i < m; i++) {
-            sum += Math.pow(2.0, -M[i]);
-        }
-        double estimate = (alphaM * m * m) / sum;
-
-        //line 13
-        int V = 0; //number of empty registers
-        for (int i : M) {
-            if (i==0){
-                V++;
-            }
+        int[] registers = new int[m];
+        for (int value : Y) {
+            updateRegister(registers, value);
         }
 
         //line 14-16
@@ -381,6 +381,39 @@ public class HyperLogLog {
                     }
                 } finally {
                     scanner.close();
+                }
+                break;
+            }
+            case "estimate": {
+                if (args.length < 2) {
+                    System.err.println("Missing register count for estimate mode.");
+                    System.out.println("null");
+                    break;
+                }
+
+                int m;
+                try {
+                    m = Integer.parseInt(args[1]);
+                } catch (NumberFormatException ex) {
+                    System.err.println("Invalid register count: " + args[1]);
+                    System.out.println("null");
+                    break;
+                }
+
+                if (m <= 0 || (m & (m - 1)) != 0 || m > DEFAULT_REGISTER_COUNT) {
+                    System.err.println("Register count must be a power of two between 1 and " + DEFAULT_REGISTER_COUNT + ".");
+                    System.out.println("null");
+                    break;
+                }
+
+                int[] x = readData();
+                HyperLogLog hll = new HyperLogLog();
+                try {
+                    double estimate = hll.hll(x, m);
+                    System.out.println(estimate);
+                } catch (IllegalArgumentException ex) {
+                    System.err.println(ex.getMessage());
+                    System.out.println("null");
                 }
                 break;
             }
