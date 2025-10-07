@@ -209,6 +209,7 @@ public class HyperLogLog {
                 break;
             }
             case "hll": {
+                int[] x = readData();
                 HyperLogLog estimator = new HyperLogLog();
                 int m = 1024;
                 if (args.length > 1) {
