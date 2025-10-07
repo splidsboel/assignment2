@@ -38,7 +38,7 @@ os.environ.setdefault("MPLCONFIGDIR", str(cache_dir))
 
 import matplotlib.pyplot as plt  # noqa: E402
 
-BUCKET_SIZES = [128,256,512,1024]
+BUCKET_SIZES = [512, 1024, 2048, 4096, 8192, 16384]
 TIMEOUT = 60
 
 

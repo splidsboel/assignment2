@@ -51,10 +51,12 @@ public class HyperLogLog {
             .toArray();
     }
 
-    //seting the registers to max of 1024
-    public static int f(int x){
-        return ((x*0xbc164501) & 0x7fffffff) >> 21;
-    }
+    //seting the registers to allow larger m
+    public static int f(int x) { 
+        int h = x * 0xbc164501; 
+        h ^= (h >>> 16); 
+        return h & 0x7fffffff; // 31-bit non-negative 
+        }
 
     /**
      * Since ρ(x) is the position of the first 1 in the binary representation of 
@@ -91,7 +93,7 @@ public class HyperLogLog {
             M[i] = 0;
         }
 
-        //line 7-11 //altered to reduce index for smaller m
+        //line 7-11 //altered to reduce index for other m
         for (int y : Y) {
             int j = f(y) % m;
             int x = h(y);
