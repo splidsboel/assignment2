@@ -1,6 +1,19 @@
+# Instructions
+
+Our implementation of hyperloglog is a gradle project with java code packaged into a .jar file. To package the .jar, run this command in the hyperloglog directory:
+```zsh
+./gradlew jar
+```
+
+We provide a few unit tests for testing correctness of the program. To run the unit tests, execute this command in the hyperloglog directory:
+```zsh
+./gradlew test
+```
 
 
 ## Generating visualizations
+
+For the report, we provide visualizations of the different experiments, we have run. This is a list of instructions to reproduce these visualizations
 
 ### rho-function
 ```zsh
@@ -9,24 +22,29 @@ python experiments.py
 # generate plot
 python postprocess.py
 ```
-The plot is called rho_distribution.png and can be found in $/ASSIGNMENT2/hyperloglog
+The plot can be found [here](hyperloglog/rho_distribution.png)
 
 ### HyperLogLog error estimation
+#### Histogram
 ```zsh
 # run experiments and generate histogram
 # --trials adjusts the amount of trials run during the experiment - default is 8 (for faster execution), table in report uses trias = 100.
 python3 hll_experiment.py -n 100000 --seed 1 --trials 100
 ```
-The histogram is called hll_error_histogram.png and can be found in $/ASSIGNMENT2/hyperloglog
+The histogram can be found [here](hyperloglog/hll_error_histogram.png)
+
+#### Table
+Generates a [.tex file](hyperloglog/estimation_error_table.tex)
+```zsh
+## commands --runs and --n-values are available for shorter smoke-test runs
+python estimation_error_table.py
+```
+
 
 ## Running tests
 
-### Unit tests
-The gradle project has a few unit tests that test the correctness of the different functions. To run them, execute these terminal commands:
-```zsh
-cd hyperloglog
-./gradlew test
-```
+In addition to the unit tests in the gradle project, we also tested our implementation of hyperloglog against the data provided in the assignment description. Below are instructions to run the python scripts which test our implementation
+
 
 ### Python sample data scripts
 
