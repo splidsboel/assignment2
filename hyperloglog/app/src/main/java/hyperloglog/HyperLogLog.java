@@ -57,10 +57,12 @@ public class HyperLogLog {
             .toArray();
     }
 
-
-    public static int f(int x){
-        return ((x*0xbc164501) & 0x7fffffff) >> 21;
-    }
+    //seting the registers to allow larger m
+    public static int f(int x) { 
+        int h = x * 0xbc164501; 
+        h ^= (h >>> 16); 
+        return h & 0x7fffffff; // 31-bit non-negative 
+        }
 
     /**
      * Since ρ(x) is the position of the first 1 in the binary representation of 
@@ -147,7 +149,18 @@ public class HyperLogLog {
         for (int value : Y) {
             updateRegister(registers, value);
         }
-        return estimateFromRegisters(registers);
+
+        //line 14-16
+        if ((estimate <= (2.5 * m)) && V > 0) {
+            return m * Math.log((double) m / V); 
+        }
+
+        //line 17-19
+        double twoTo32 = Math.pow(2.0, 32);
+        if (estimate > ((1.0/30.0) * twoTo32)) {
+            estimate = -twoTo32 * Math.log(1.0 - (estimate / twoTo32));
+        }
+        return estimate;
     }
     
 
@@ -193,6 +206,26 @@ public class HyperLogLog {
                     System.out.println(String.format("%d %d %d",
                         hashed[0], hashed[1], hashed[2]));
                 }
+                break;
+            }
+            case "hll": {
+                int[] x = readData();
+                HyperLogLog estimator = new HyperLogLog();
+                int m = 1024;
+                if (args.length > 1) {
+                    try {
+                        m = Integer.parseInt(args[1]);
+                        if (m <= 0) {
+                            System.err.println("Register count must be positive, defaulting to 1024.");
+                            m = 1024;
+                        }
+                    } catch (NumberFormatException ex) {
+                        System.err.println("Unable to parse register count, defaulting to 1024.");
+                        m = 1024;
+                    }
+                }
+                double estimate = estimator.hll(x, m);
+                System.out.println(estimate);
                 break;
             }
             case "rho-dist": { //if the input starts with rho-dist

@@ -56,7 +56,7 @@ if __name__ == '__main__':
     raw_output = run_java(str(JAR_PATH), MODE, N)
     distribution_raw = parse_distribution(raw_output)
 
-    #total number of values vs expected (should ever be different but nice to have)
+    #total number of values vs expected (shouldnt ever be different but nice to have)
     total_values = sum(count for _, count in distribution_raw)
     print(f"Distribution covers {total_values} values (expected {N}).")
     numeric_entries: List[Tuple[int, int]] = []
