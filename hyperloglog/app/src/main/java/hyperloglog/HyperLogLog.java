@@ -228,6 +228,39 @@ public class HyperLogLog {
                 System.out.println(estimate);
                 break;
             }
+            case "estimate": {
+                if (args.length < 2) {
+                    System.err.println("Missing register count for estimate mode.");
+                    System.out.println("null");
+                    break;
+                }
+
+                int m;
+                try {
+                    m = Integer.parseInt(args[1]);
+                } catch (NumberFormatException ex) {
+                    System.err.println("Invalid register count: " + args[1]);
+                    System.out.println("null");
+                    break;
+                }
+
+                if (m <= 0 || (m & (m - 1)) != 0) {
+                    System.err.println("Register count must be a positive power of two.");
+                    System.out.println("null");
+                    break;
+                }
+
+                int[] x = readData();
+                HyperLogLog estimator = new HyperLogLog();
+                try {
+                    double estimate = estimator.hll(x, m);
+                    System.out.println(estimate);
+                } catch (IllegalArgumentException ex) {
+                    System.err.println(ex.getMessage());
+                    System.out.println("null");
+                }
+                break;
+            }
             case "rho-dist": { //if the input starts with rho-dist
                 int[] x = readData();
                 int[] hashed = hArray(x);
