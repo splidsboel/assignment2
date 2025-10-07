@@ -93,7 +93,7 @@ public class HyperLogLog {
 
         //line 7-11
         for (int y : Y) {
-            int j = f(y);
+            int j = f(y) % m;
             int x = h(y);
             M[j] = Math.max(M[j], rho(x));
         }
@@ -166,6 +166,25 @@ public class HyperLogLog {
                 }
                 break;
             }
+            case "hll": {
+                HyperLogLog estimator = new HyperLogLog();
+                int m = 1024;
+                if (args.length > 1) {
+                    try {
+                        m = Integer.parseInt(args[1]);
+                        if (m <= 0) {
+                            System.err.println("Register count must be positive, defaulting to 1024.");
+                            m = 1024;
+                        }
+                    } catch (NumberFormatException ex) {
+                        System.err.println("Unable to parse register count, defaulting to 1024.");
+                        m = 1024;
+                    }
+                }
+                double estimate = estimator.hll(x, m);
+                System.out.println(estimate);
+                break;
+            }
             case "rho-dist": { //if the input starts with rho-dist
                 int[] hashed = hArray(x);
                 int[] counts = new int[33]; //indexes from 1-32 to store the rho counts
@@ -186,6 +205,8 @@ public class HyperLogLog {
                 }
                 break;
             }
+    
+            
             default: {
                 System.err.println("Unknown mode: " + args[0]);
                 System.out.println("null");
