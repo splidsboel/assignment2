@@ -23,6 +23,8 @@ public class HyperLogLog {
         0x744edb48, 0x19adce93
     };
 
+    private static final int DEFAULT_REGISTER_COUNT = 1024;
+
     public HyperLogLog() {
         
     }
@@ -67,63 +69,57 @@ public class HyperLogLog {
         return Integer.numberOfLeadingZeros(x) + 1;
     }
 
+    private static void updateRegister(int[] registers, int value) {
+        int bucket = f(value);
+        int hashed = h(value);
+        registers[bucket] = Math.max(registers[bucket], rho(hashed));
+    }
+
+    private static double estimateFromRegisters(int[] registers) {
+        int m = registers.length;
+        double alphaM = 0.7213 / (1 + (1.079 / m));
+
+        double sum = 0;
+        int empty = 0;
+        for (int registerValue : registers) {
+            sum += Math.pow(2.0, -registerValue);
+            if (registerValue == 0) {
+                empty++;
+            }
+        }
+
+        double estimate = (alphaM * m * m) / sum;
+        if ((estimate <= (2.5 * m)) && empty > 0) {
+            return m * Math.log((double) m / empty);
+        }
+
+        double twoTo32 = Math.pow(2.0, 32);
+        if (estimate > ((1.0 / 30.0) * twoTo32)) {
+            estimate = -twoTo32 * Math.log(1.0 - (estimate / twoTo32));
+        }
+        return estimate;
+    }
+
     /**
      * overloaded hll with default m argument
      * @param Y
      * @return
      */
     public double hll(int[] Y){
-        return hll(Y, 1024);
+        return hll(Y, DEFAULT_REGISTER_COUNT);
     }
     /**
-     * implements hyperloglog.
-     * Comments are references to line #'s in the pseudocode (Algorithm 1)
+     * implements hyperloglog using helper methods
      * @param Y
      * @param m
      * @return
      */
     public double hll(int[] Y, int m){
-        double alphaM = 0.7213/(1+(1.079/m));
-        int[] M = new int[m];
-
-        //line 4-6
-        for (int i = 0; i < m; i++) {
-            M[i] = 0;
+        int[] registers = new int[m];
+        for (int value : Y) {
+            updateRegister(registers, value);
         }
-
-        //line 7-11
-        for (int y : Y) {
-            int j = f(y);
-            int x = h(y);
-            M[j] = Math.max(M[j], rho(x));
-        }
-
-        //line 12
-        double sum = 0;
-        for (int i = 0; i < m; i++) {
-            sum += Math.pow(2.0, -M[i]);
-        }
-        double estimate = (alphaM * m * m) / sum;
-
-        //line 13
-        int V = 0; //number of empty registers
-        for (int i : M) {
-            if (i==0){
-                V++;
-            }
-        }
-
-        //line 14-16
-        if ((estimate <= (2.5 * m)) && V > 0) {
-            return m * Math.log((double) m / V); 
-        }
-
-        //line 17-19
-        double twoTo32 = Math.pow(2.0, 32);
-        if (estimate > ((1.0/30.0) * twoTo32)) {
-            estimate = -twoTo32 * Math.log(1.0 - (estimate / twoTo32));
-        }
-        return estimate;
+        return estimateFromRegisters(registers);
     }
     
 
@@ -144,10 +140,15 @@ public class HyperLogLog {
     }
 
     public static void main(String[] args) {
-        int[] x = readData();
+        if (args.length == 0) {
+            System.err.println("Missing mode argument.");
+            System.out.println("null");
+            return;
+        }
 
         switch (args[0]) {
             case "hash": { //if the input begins with hash
+                int[] x = readData();
                 int[] hashed = hArray(x);
                 if (hashed.length == 0) {
                     System.out.println("null");
@@ -167,6 +168,7 @@ public class HyperLogLog {
                 break;
             }
             case "rho-dist": { //if the input starts with rho-dist
+                int[] x = readData();
                 int[] hashed = hArray(x);
                 int[] counts = new int[33]; //indexes from 1-32 to store the rho counts
 
@@ -183,6 +185,33 @@ public class HyperLogLog {
                 System.out.println("rho,count");
                 for (int rhoValue = 1; rhoValue < counts.length; rhoValue++) {
                     System.out.printf("%d,%d%n", rhoValue, counts[rhoValue]);
+                }
+                break;
+            }
+            case "threshold": {
+                Scanner scanner = new Scanner(System.in);
+                try {
+                    if (!scanner.hasNextInt()) {
+                        System.err.println("Missing threshold input.");
+                        System.out.println("null");
+                        break;
+                    }
+
+                    int threshold = scanner.nextInt();
+                    int[] registers = new int[DEFAULT_REGISTER_COUNT];
+                    while (scanner.hasNextInt()) {
+                        int value = scanner.nextInt();
+                        updateRegister(registers, value);
+                    }
+
+                    double estimate = estimateFromRegisters(registers);
+                    if (estimate >= threshold) {
+                        System.out.println("above");
+                    } else {
+                        System.out.println("below");
+                    }
+                } finally {
+                    scanner.close();
                 }
                 break;
             }
